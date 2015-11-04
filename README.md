@@ -3,9 +3,9 @@ A Docker image to start a dynamic MongoDB 3.x.x replica set on top of Apache Mes
 
 ## Introduction
 
-This Docker image was created to make it as easy as possible to create a MongoDb ReplicaSet on top of an existing Apache Mesos cluster, with Marathon as scheduler. 
+This Docker image was created to make it as easy as possible to create a MongoDB ReplicaSet on top of an existing Apache Mesos cluster, with Marathon as scheduler. 
 The [official MongoDB ReplicaSet tutorial](https://docs.mongodb.org/manual/tutorial/deploy-replica-set/) contains several steps to initialize the ReplicaSet and to add the members. 
-It even gets more complicated if you want to add authentication and other things. This image intents to hide this complexity by using a small Node.js application which handles the configuration, togehter with the usage of Docker environment variables.
+It even gets more complicated if you want to add authentication and other things. This image intents to hide this complexity by using a small Node.js application which handles the configuration, together with the usage of Docker environment variables.
 
 ### External preparations
 
