@@ -3,7 +3,8 @@ module.exports = {
     "marathonAppId": process.env.MARATHON_APP_ID || "/mongodb",  // Set by Marathon
     "marathonUrl": process.env.MARATHON_URL || "localhost:8080",
     "zkBaseConnection": process.env.ZK_CONNECTION || "localhost:2181",
-    "host": process.env.HOST || "192.168.200.32", // Set by Marathon -> 127.0.0.1
+    "zkBaseNode": "/mongodb-configurator",
+    "host": process.env.HOST || "127.0.0.1", // Set by Marathon
     "webPort": {
         "public": parseInt(process.env.PORT0) || 3000, // Set by Marathon
         "internal": 3000

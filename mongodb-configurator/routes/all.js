@@ -1,23 +1,18 @@
 "use strict";
 var express = require('express');
-var zookeeper = require('node-zookeeper-client');
+
 var Q = require('q');
 var MarathonLib = require('../lib/marathon');
 var MongoDBLib = require('../lib/mongodb');
 
-module.exports = function(options, logger){
+module.exports = function(options, logger, zkClient){
 
   logger.info(JSON.stringify(options));
 
   var marathon = new MarathonLib(options.marathonUrl, logger);
   var mongoDb = new MongoDBLib(options.host, options.mongoDbPort.public, options.replicaSet, logger);
   var router = express.Router();
-  var zkClient = zookeeper.createClient(options.zkBaseConnection, {
-    sessionTimeout: 5000,
-    spinDelay : 1000,
-    retries : 0
-  });
-  var zkNode = "/mongodb-configurator" + options.marathonAppId;
+  var zkNode = options.zkBaseNode + options.marathonAppId;
   var eventCache = [],
       isReady = false,
       isHealthy = true;

@@ -3,6 +3,7 @@ var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser');
 var winston = require('winston');
+var zookeeper = require('node-zookeeper-client');
 
 // Load configuration
 var options = require('./lib/config');
@@ -24,8 +25,34 @@ var logger = new (winston.Logger)({
   ]
 });
 
+// Create ZooKeeper client
+var zkClient = zookeeper.createClient(options.zkBaseConnection, {
+  sessionTimeout: 5000,
+  spinDelay : 1000,
+  retries : 0
+});
+
+// Ensure that the configured ZK path/node exists
+zkClient.exists(options.zkBaseNode, function (error, stat) {
+  if (error) {
+    logger.error(error);
+  }
+  console.log(stat);
+  if (stat) {
+    logger.info("ensureZKPath: Node " + options.zkBaseNode + " exists.");
+  } else {
+    zkClient.create(options.zkBaseNode, function (error, path) {
+      if (error) {
+        logger.error(error);
+      } else {
+        logger.info("ensureZKPath: Node " + options.zkBaseNode + " is created.");
+      }
+    });
+  }
+});
+
 // Load routes
-var routes = require('./routes/all')(options, logger);
+var routes = require('./routes/all')(options, logger, zkClient);
 
 // Instanciate Express.js
 var app = express();
@@ -42,10 +69,10 @@ app.use(bodyParser.json());
 app.use('/', routes);
 
 // Catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+app.use(function(c, res, next) {
+  logger.error("Path "+ c.url +  " not found!");
+  res.status = 404;
+  next();
 });
 
 // Listen on provided port, on all network interfaces.
