@@ -1,5 +1,5 @@
 # MongoDB-Marathon
-A Docker image to start a dynamic MongoDB 3.x.x replica set on top of Apache Mesos and Marathon.
+A Docker image to start a dynamic MongoDB 3.2.x replica set on top of Apache Mesos and Marathon.
 
 ## Introduction
 
