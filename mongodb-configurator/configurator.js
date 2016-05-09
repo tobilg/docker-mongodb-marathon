@@ -37,7 +37,6 @@ zkClient.exists(options.zkBaseNode, function (error, stat) {
   if (error) {
     logger.error(error);
   }
-  console.log(stat);
   if (stat) {
     logger.info("ensureZKPath: Node " + options.zkBaseNode + " exists.");
   } else {

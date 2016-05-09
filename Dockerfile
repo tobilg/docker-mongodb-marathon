@@ -1,11 +1,11 @@
-FROM ubuntu:14.04.3
-MAINTAINER tobilg <fb.tools.github@gmail.com>
+FROM ubuntu:14.04.4
+MAINTAINER tobilg <tobilg@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM xterm
 
 # Install MongoDB
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 && \
     echo "deb http://repo.mongodb.org/apt/ubuntu "$(lsb_release -sc)"/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends --force-yes \
@@ -16,7 +16,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
     echo "mongodb-org-tools hold" | dpkg --set-selections
 
 # Install Node.js 4.x
-ENV NODE_VERSION v4.2.6
+ENV NODE_VERSION v4.4.4
 RUN wget --no-check-certificate https://nodejs.org/dist/$NODE_VERSION/node-$NODE_VERSION-linux-x64.tar.gz && \
     tar -C /usr/local --strip-components 1 -xzf node-$NODE_VERSION-linux-x64.tar.gz && \
     rm node-$NODE_VERSION-linux-x64.tar.gz

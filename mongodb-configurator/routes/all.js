@@ -13,6 +13,7 @@ module.exports = function(options, logger, zkClient){
   var mongoDb = new MongoDBLib(options.host, options.mongoDbPort.public, options.replicaSet, logger);
   var router = express.Router();
   var zkNode = options.zkBaseNode + options.marathonAppId;
+  var zkNodeFinished = options.zkBaseNode + options.marathonAppId + "/setupFinished";
   var eventCache = [],
       isReady = false,
       isHealthy = true;
@@ -129,10 +130,10 @@ module.exports = function(options, logger, zkClient){
     return deferred.promise;
   }
 
-  /* testing only! */
   function deleteAppNode() {
     var deferred = Q.defer();
 
+      // Check if base node exists
     zkClient.exists(zkNode, function (error, stat) {
       if (error) {
         deferred.reject(error.stack);
@@ -141,15 +142,43 @@ module.exports = function(options, logger, zkClient){
       // Exists
       if (stat) {
 
-        // Remove node
-        zkClient.remove(zkNode, function (error) {
-          if (error) {
-            deferred.reject(error.stack);
-          } else {
-            deferred.resolve(true);
-          }
-          logger.info('Node is deleted.');
-        });
+          // If base node exists, check if finished node exists (recursive deletion)
+          zkClient.exists(zkNode, function (error, stat) {
+              if (error) {
+                  deferred.reject(error.stack);
+              }
+
+              // If finished node exists, remove
+              if (stat) {
+
+                  // Remove zkNodeFinished node
+                  zkClient.remove(zkNodeFinished, function (error) {
+                      if (error) {
+                          deferred.reject(error.stack);
+                      } else {
+                          // Remove zkNode
+                          zkClient.remove(zkNode, function (error) {
+                              if (error) {
+                                  deferred.reject(error.stack);
+                              } else {
+                                  deferred.resolve(true);
+                              }
+                          });
+                      }
+                  });
+
+              } else {
+                  // Remove zkNode
+                  zkClient.remove(zkNode, function (error) {
+                      if (error) {
+                          deferred.reject(error.stack);
+                      } else {
+                          deferred.resolve(true);
+                      }
+                  });
+              }
+
+          });
 
       } else {
         deferred.resolve(false);
@@ -174,8 +203,17 @@ module.exports = function(options, logger, zkClient){
                   mongoDb.initializeReplicaSet()
                       .then(waitForStartupAndConfigure)
                       .then(function(result) {
-                        // Now we are ready to handle the events from Marathon
-                        isReady = true;
+                          // Now we are ready to handle the events from Marathon
+                          isReady = true;
+
+                          zkClient.create(zkNodeFinished, function (error, path) {
+                              if (error) {
+                                  logger.info("setupFinished: Received error: " + JSON.stringify(error));
+                              } else {
+                                  logger.info("setupFinished: Node " + zkNode + "/setupFinished was created.");
+                              }
+                          });
+
                       }).catch(function(error) {
                         logger.error("Error: " + JSON.stringify(error));
                       });
@@ -187,8 +225,37 @@ module.exports = function(options, logger, zkClient){
               logger.error("Error: " + JSON.stringify(error));
             });
         } else {
-          // Testing only
-          //deleteAppNode();
+            // Check if setupFinished node exists in ZooKeeper
+            zkClient.exists(zkNodeFinished, function (event) {
+                logger.info("Got watcher event " + event.name + " for " + zkNodeFinished);
+
+                // If the setupFinished node is created, also set the event callback for the then secondary nodes.
+                // This is done so that when the primary/master node goes down, the secondary can step in and listen
+                // for the event callback scaling events.
+                // The secondaries will ignore all events if mongoDb.isMaster() is false.
+                if (event.name && event.name === "NODE_CREATED") {
+                    marathon.setupEventCallback(options.host, options.webPort.public)
+                        .then(function() {
+                            // Signal readiness to consume the Marathon events
+                            isReady = true;
+                            logger.info("Event listener was created for host " + options.host + " on port " + options.webPort.public);
+                        }).catch(function(error) {
+                            logger.error("Error: " + JSON.stringify(error));
+                        });
+                }
+
+            }, function (error, stat) {
+                if (error) {
+                    logger.error(error.stack);
+                    return;
+                }
+
+                if (stat) {
+                    logger.info("Node " + zkNodeFinished + " exists.");
+                } else {
+                    logger.info("Node " + zkNodeFinished + " does not exist.");
+                }
+            });
         }
       })
       .catch(function(error) {

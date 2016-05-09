@@ -83,20 +83,20 @@ To be able to support the automatic ReplicaSet initialization and more, an API h
 
 ### Config and Status
 
-    GET /config                 - Shows the current ReplicaSet configuration as JSON
-    GET /status                 - Shows the current ReplicaSet status as JSON
-    GET /health                 - Used for Marathon health checks and graceful shutdown. Will return 503 if SIGTERM is received, so that Marathon can react. 
+    GET /config                 Shows the current ReplicaSet configuration as JSON
+    GET /status                 Shows the current ReplicaSet status as JSON
+    GET /health                 Used for Marathon health checks and graceful shutdown. Will return 503 if SIGTERM is received, so that Marathon can react. 
     
 ### Application locking
 
 The Node.js application creates a ZooKeeper "lock" which signals that there already exists a MongoDB ReplicaSet application under the respective Marathon AppId. To reuse/reinitialize the application, the "lock" has to be removed manually. 
 
-    GET /releaseLock           - Shows the current ReplicaSet configuration as JSON
+    GET /releaseLock            Deletes the lock for the current Marathon application id
     
 ### Event handling
 
-    POST /event                - Endpoint for the Marathon REST API scaling events
-    DELETE /eventSubscription  - Removes the event subscription to the Marathon REST API. Is automatically called during graceful shutdown. Will only actually work on the Master/Primary node.
+    POST /event                 Endpoint for the Marathon REST API scaling events
+    DELETE /eventSubscription   Removes the event subscription to the Marathon REST API. Is automatically called during graceful shutdown. Will only actually work on the Master/Primary node.
 
 ## Overall options
 

@@ -78,7 +78,7 @@ Marathon.prototype.setupEventCallback = function(host, port) {
             deferred.reject(error);
         });
 
-    return deferred.promise;//rp(reqOptions);
+    return deferred.promise;
 };
 
 Marathon.prototype.removeEventCallback = function(host, port) {
@@ -108,7 +108,7 @@ Marathon.prototype.removeEventCallback = function(host, port) {
             deferred.reject(error);
         });
 
-    return deferred.promise;//rp(reqOptions);
+    return deferred.promise;
 };
 
 module.exports = Marathon;
