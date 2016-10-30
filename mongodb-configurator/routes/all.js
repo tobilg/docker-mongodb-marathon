@@ -143,7 +143,7 @@ module.exports = function(options, logger, zkClient){
       if (stat) {
 
           // If base node exists, check if finished node exists (recursive deletion)
-          zkClient.exists(zkNode, function (error, stat) {
+          zkClient.exists(zkNodeFinished, function (error, stat) {
               if (error) {
                   deferred.reject(error.stack);
               }
