@@ -1,4 +1,7 @@
 # MongoDB-Marathon
+
+**[DEPRECATED]** Please use https://github.com/tobilg/dcos-commons/tree/mongodb-replicaset/frameworks/mongodb-replicaset
+
 A Docker image to start a dynamic MongoDB 3.2.x replica set on top of Apache Mesos and Marathon.
 
 ## Introduction
